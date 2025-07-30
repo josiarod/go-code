@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -79,15 +80,30 @@ func main() {
 	}
 	fmt.Println("Status code is valid (2xx)")
 
-	var words Words
+	var responseData HTTPBinResponse
 
 	fmt.Println("Parsing JSON response...")
-	err = json.Unmarshal(body, &words)
+	err = json.Unmarshal(body, &responseData)
 	if err != nil {
 		fmt.Printf("Error parsing JSON: %v\n", err)
 		log.Fatal(err)
 	}
 	fmt.Println("JSON parsed successfully")
 
-	fmt.Printf("JSON: Parsed:\nPage: %s\nWords: %s\n", words.Page, strings.Join(words.Words, ", "))
+	// Print the response in a formatted way
+	fmt.Println("\n=== Response ===")
+	fmt.Printf("URL: %s\n", responseData.URL)
+	fmt.Printf("Origin: %s\n", responseData.Origin)
+	
+	fmt.Println("\nHeaders:")
+	for k, v := range responseData.Headers {
+		fmt.Printf("  %s: %s\n", k, v)
+	}
+
+	if len(responseData.Args) > 0 {
+		fmt.Println("\nArguments:")
+		for k, v := range responseData.Args {
+			fmt.Printf("  %s: %s\n", k, v)
+		}
+	}
 }
