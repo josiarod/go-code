@@ -13,10 +13,11 @@ import (
 	"time"
 )
 
-type Words struct {
-	Page  string   `json:"page"`
-	Input string   `json:"input"`
-	Words []string `json:"words"`
+type HTTPBinResponse struct {
+    Args    map[string]string `json:"args"`
+    Headers map[string]string `json:"headers"`
+    Origin  string            `json:"origin"`
+    URL     string            `json:"url"`
 }
 
 func main() {
