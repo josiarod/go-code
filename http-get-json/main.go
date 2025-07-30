@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,7 +11,6 @@ import (
 	"os"
 	"strings"
 	"time"
-	"context"
 )
 
 type Words struct {
@@ -20,6 +20,7 @@ type Words struct {
 }
 
 func main() {
+	fmt.Println("Starting program...")
 	args := os.Args
 
 	if len(args) < 2 {
@@ -27,49 +28,65 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Create a context with timeout
+	targetURL := args[1]
+	fmt.Printf("URL to fetch: %s\n", targetURL)
 
+	if _, err := url.ParseRequestURI(targetURL); err != nil {
+		fmt.Printf("Error: Invalid URL format - %s\n", err)
+		os.Exit(1)
+	}
+
+	// Create a context with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	// Create a new request with context
-    req, err:= http.NewRequestWithContext(ctx, "GET", args[1], nil)
-    if err != nil {
+	fmt.Println("Creating HTTP request...")
+	req, err := http.NewRequestWithContext(ctx, "GET", targetURL, nil)
+	if err != nil {
 		log.Fatalf("Error creating request: %v", err)
 	}
+	fmt.Println("Request created")
 
 	// Make the HTTP request
+	fmt.Println("Creating HTTP client...")
 	client := &http.Client{
 		Timeout: 10 * time.Second, // Total timeout for the entire request
 	}
 
+	fmt.Println("Sending HTTP request...")
 	response, err := client.Do(req)
-
 	if err != nil {
-		if errors.Is(err, context.DeadlineExceeded) {
-			log.Fatal("Request timed out")
-		}
-		log.Fatal("Request failed %v", err)
+		fmt.Printf("Error in HTTP request: %v\n", err)
+		log.Fatal(err)
 	}
+	fmt.Printf("Received response with status: %s\n", response.Status)
 
 	defer response.Body.Close()
 
+	fmt.Println("Reading response body...")
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
+		fmt.Printf("Error reading response body: %v\n", err)
 		log.Fatalf("Error reading response: %v", err)
 	}
+	fmt.Println("Response body read successfully")
 
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		fmt.Printf("Error: Received status code %d\n", response.StatusCode)
 		log.Fatalf("Invalid status code %d: %s", response.StatusCode, string(body))
 	}
-    
+	fmt.Println("Status code is valid (2xx)")
 
 	var words Words
 
+	fmt.Println("Parsing JSON response...")
 	err = json.Unmarshal(body, &words)
 	if err != nil {
+		fmt.Printf("Error parsing JSON: %v\n", err)
 		log.Fatal(err)
 	}
+	fmt.Println("JSON parsed successfully")
 
 	fmt.Printf("JSON: Parsed:\nPage: %s\nWords: %s\n", words.Page, strings.Join(words.Words, ", "))
 }
