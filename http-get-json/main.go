@@ -13,15 +13,17 @@ import (
 )
 
 type HTTPBinResponse struct {
-    Args    map[string]string `json:"args"`
-    Headers map[string]string `json:"headers"`
-    Origin  string            `json:"origin"`
-    URL     string            `json:"url"`
+	Args    map[string]string `json:"args"`
+	Headers map[string]string `json:"headers"`
+	Origin  string            `json:"origin"`
+	URL     string            `json:"url"`
 }
 
 func main() {
 	fmt.Println("Starting program...")
 	args := os.Args
+
+	//https://httpbin.org/get
 
 	if len(args) < 2 {
 		fmt.Printf("Usage: ./http-get <url>\n")
@@ -92,7 +94,7 @@ func main() {
 	fmt.Println("\n=== Response ===")
 	fmt.Printf("URL: %s\n", responseData.URL)
 	fmt.Printf("Origin: %s\n", responseData.Origin)
-	
+
 	fmt.Println("\nHeaders:")
 	for k, v := range responseData.Headers {
 		fmt.Printf("  %s: %s\n", k, v)
